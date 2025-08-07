@@ -10,7 +10,6 @@ builder.Services
     .AddDomainServices()
     .AddMarkdown()
     .AddControllersWithViews();
-
 var app = builder.Build();
 
 app.UseMarkdown();
