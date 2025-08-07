@@ -11,6 +11,7 @@
                 <th>Surname</th>
                 <th>Email</th>
                 <th>Account Active</th>
+				<th>Date of Birth</th>
                 <th style="width: 1px;"></th>
             </tr>
         </thead>
@@ -33,15 +34,18 @@
                     <td>
                         @(item.IsActive ? "Yes" : "No")
                     </td>
+					<td>
+						@item.DateOfBirth.ToString("dd/MM/yyyy")
+					</td>
                     <td>
                         <div class="dropdown">
                             <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="btnToggleActions">
                                 Actions
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="btnToggleActions">
-                                <li><a class="dropdown-item" href="#">View</a></li>
-                                <li><a class="dropdown-item" href="#">Edit</a></li>
-                                <li><a class="dropdown-item" href="#">Delete</a></li>
+								<li><a class="dropdown-item viewUser" data-user-id="@item.Id">View</a></li>
+								<li><a class="dropdown-item editUser" data-user-id="@item.Id">Edit</a></li>
+								<li><a class="dropdown-item deleteUser" data-user-id="@item.Id">Delete</a></li>
                             </ul>
                         </div>
                     </td>
@@ -54,12 +58,127 @@
 <div>
     <div class="btn-group" role="group">
         <a asp-controller="Users" asp-action="List" class="btn btn-default">Show All</a>
-        <a href="#" class="btn btn-default">Active Only</a>
-        <a href="#" class="btn btn-default">Non Active</a>
+		<a asp-controller="Users" asp-action="ActiveUsersFilter" asp-route-isActive="true" class="btn btn-default">Active Only</a>
+		<a asp-controller="Users" asp-action="ActiveUsersFilter" asp-route-isActive="false" class="btn btn-default">Non Active</a>
     </div>
 
-    <a href="#" class="btn btn-primary float-end">
-        Add User
-    </a>
+	<a class="btn btn-primary float-end" id='addUser'>Add User</a>
 </div>
 
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modalTitle"></h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" id="userModalBody">
+				<div class="text-center text-muted">Load</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	$(function () {
+		$('.viewUser').on('click', function () {
+			var userId = $(this).data('user-id');
+			$.ajax({
+			   method: "GET",
+			   url: "@Url.Action("ViewUserPartial", "Users")",
+			   data: { userId: userId },
+			   datatype: "json",
+				   success: function (data) {
+						$("#userModalBody").empty().html(data);
+						$("#modalTitle").empty().html("User Details");
+						$("#userModal").modal("show");
+				   },
+				   error: function (data) {
+				   }
+			});
+		});
+
+		$('.editUser').on('click', function () {
+			var userId = $(this).data('user-id');
+			$.ajax({
+			   method: "GET",
+			   url: "@Url.Action("UserEditFormPartial", "Users")",
+			   data: { userId: userId },
+			   datatype: "json",
+				   success: function (data) {
+						$("#userModalBody").empty().html(data);
+						$("#modalTitle").empty().html("User Edit Details");
+						$("#userModal").modal("show");
+				   },
+				   error: function (data) {
+				   }
+			});
+		});
+
+		$('#addUser').on('click', function () {
+			$.ajax({
+			   method: "GET",
+			   url: "@Url.Action("UserAddFormPartial", "Users")",
+			   datatype: "json",
+				   success: function (data) {
+						$("#userModalBody").empty().html(data);
+						$("#modalTitle").empty().html("Add User Form");
+						$("#userModal").modal("show");
+						$.validator.unobtrusive.parse('#userModalBody');
+				   },
+				   error: function (data) {
+				   }
+			});
+		});
+
+		$('.deleteUser').on('click', function () {
+			var userId = $(this).data('user-id');
+			$.ajax({
+			   method: "Delete",
+			   url: "@Url.Action("DeleteUser", "Users")",
+			   data: { userId: userId },
+			   datatype: "json",
+				   success: function (data) {
+						alert(data.message);
+						location.reload();
+				   },
+				   error: function (data) {
+						if (data.responseJSON && data.responseJSON.message) {
+							alert(data.responseJSON.message);
+						}
+				   }
+			});
+		});
+	});
+
+	function SubmitUser(newUserFlag){
+			var form = $('#userForm');
+			var urlMethod;
+			if (!form.valid()) {
+				return;
+			}
+
+			if(newUserFlag == 'False'){
+				urlMethod = "@Url.Action("EditUser", "Users")"
+			}
+			else if(newUserFlag == 'True'){
+				urlMethod = "@Url.Action("AddUser", "Users")"
+			}
+
+			$.ajax({
+			   method: "POST",
+			   url: urlMethod,
+			   data: form.serialize(),
+			   datatype: "json",
+				   success: function (data) {
+					    alert(data.message);
+						location.reload();
+				   },
+				   error: function (data) {
+						if (data.responseJSON && data.responseJSON.message) {
+							alert(data.responseJSON.message);
+						} 
+				   }
+			});
+		}
+</script>

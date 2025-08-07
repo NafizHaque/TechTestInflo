@@ -1,0 +1,39 @@
+﻿@model UserManagement.Web.Models.Users.UserViewModel
+
+<form id="userForm">
+	<input type="hidden" asp-for="Id" />
+	<input type="hidden" asp-for="IsActive" />
+
+	<div class="form-group">
+
+		<label asp-for="Forename">Forename</label>
+		<br />
+		<span asp-validation-for="Forename" class="text-danger"></span>
+		<input asp-for="Forename" class="form-control" />
+	</div>
+
+	<div class="form-group">
+		<label asp-for="Surname">Surname</label>
+		<br />
+		<span asp-validation-for="Surname" class="text-danger"></span>
+		<input asp-for="Surname" class="form-control" />
+	</div>
+
+	<div class="form-group">
+		<label asp-for="Email">Email</label>
+		<br />
+		<span asp-validation-for="Email" class="text-danger"></span>
+		<input asp-for="Email" class="form-control" />
+	</div>
+
+	<div class="form-group">
+		<label asp-for="DateOfBirth">Date Of Birth</label>
+		<br />
+		<span asp-validation-for="DateOfBirth" class="text-danger"></span>
+		<input asp-for="DateOfBirth" class="form-control" type="date"
+			   value="@Model.DateOfBirth.ToString("yyyy-MM-dd")" />
+	</div>
+
+	<br />
+	<button type="button" class="btn btn-primary" onclick="SubmitUser('@Model.NewUserFlag')">Submit</button>
+</form>
