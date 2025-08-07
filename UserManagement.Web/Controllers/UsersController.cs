@@ -126,20 +126,18 @@ public class UsersController : Controller
             return BadRequest( new { message = "User could not be found!" });
         }
 
-        if (user.Id <= 0 || _userService.GetUserById(user.Id).Id == 0)
+        var userToBeUpdated = _userService.GetUserById(user.Id);
+
+        if (user.Id <= 0 || userToBeUpdated.Id == 0)
         {
             return BadRequest(new { message = "User could not be found!" });
         }
 
-        var userToBeUpdated = new User
-        {
-            Id = user.Id,
-            Forename = user.Forename!,
-            Surname = user.Surname!,
-            Email = user.Email!,
-            IsActive = user.IsActive,
-            DateOfBirth = user.DateOfBirth
-        };
+        userToBeUpdated.Forename = user.Forename!;
+        userToBeUpdated.Surname = user.Surname!;
+        userToBeUpdated.Email = user.Email!;
+        userToBeUpdated.IsActive = user.IsActive;
+        userToBeUpdated.DateOfBirth = user.DateOfBirth;
 
         _userService.EditUser(userToBeUpdated);
 
