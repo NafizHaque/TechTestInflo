@@ -1,0 +1,105 @@
+﻿@model UserManagement.Web.Models.Logging.LogEntriesListViewModel
+
+<h2>User List</h2>
+
+<div class="table-responsive">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Level</th>
+				<th>Operation</th>
+				<th>Message</th>
+				<th>Timestamp</th>
+				<th style="width: 1px;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.LogEntries)
+			{
+				<tr>
+					<td>
+						@item.Id
+					</td>
+					<td>
+						@item.Level.ToString()
+					</td>
+					<td>
+						@item.Operation.ToString()
+					</td>
+					<td>
+						@item.Message
+					</td>
+					<td>
+						@item.TimeStamp
+					</td>
+					<td>
+						<div class="dropdown">
+							<button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="btnToggleActions">
+								Actions
+							</button>
+							<ul class="dropdown-menu" aria-labelledby="btnToggleActions">
+								<li><a class="dropdown-item viewLog" data-log-id="@item.Id">View</a></li>
+								<li><a class="dropdown-item deleteLog" data-log-id="@item.Id">Delete</a></li>
+							</ul>
+						</div>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+<div class="modal fade" id="logModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modalTitle"></h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" id="logModalBody">
+				<div class="text-center text-muted">Load</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	$(function () {
+		$('.viewLog').on('click', function () {
+			var logId = $(this).data('log-id');
+			$.ajax({
+			   method: "GET",
+			   url: "@Url.Action("ViewLogPartial", "Log")",
+			   data: { logId: logId },
+			   datatype: "json",
+				   success: function (data) {
+						$("#logModalBody").empty().html(data);
+						$("#modalTitle").empty().html("Log Details");
+						$("#logModal").modal("show");
+				   },
+				   error: function (data) {
+				   }
+			});
+		});
+
+		$('.deleteLog').on('click', function () {
+			var logId = $(this).data('log-id');
+			$.ajax({
+			   method: "Delete",
+			   url: "@Url.Action("DeleteLog", "Log")",
+			   data: { logId: logId },
+			   datatype: "json",
+				   success: function (data) {
+						alert(data.message);
+						location.reload();
+				   },
+				   error: function (data) {
+						if (data.responseJSON && data.responseJSON.message) {
+							alert(data.responseJSON.message);
+						}
+				   }
+			});
+		});
+	});
+</script>

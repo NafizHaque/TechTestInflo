@@ -1,11 +1,15 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
+using UserManagement.Data.Enum;
 
 namespace UserManagement.Data.Entities;
-public class Log
+public class LogEntry
 {
     public int Id { get; set; }
 
-    public string Level { get; set; } = "Information";
+    public LogLevel Level { get; set; }
+
+    public LoggingEvents Operation { get; set; }
 
     public string Message { get; set; } = string.Empty;
 

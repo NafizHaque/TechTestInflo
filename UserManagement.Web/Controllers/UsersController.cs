@@ -1,6 +1,9 @@
 ﻿using System.Linq;
+using Microsoft.Extensions.Logging;
+using UserManagement.Data.Enum;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
+using UserManagement.Services.Interfaces;
 using UserManagement.Web.Models.Users;
 
 namespace UserManagement.WebMS.Controllers;
@@ -8,11 +11,18 @@ namespace UserManagement.WebMS.Controllers;
 public class UsersController : Controller
 {
     private readonly IUserService _userService;
-    public UsersController(IUserService userService) => _userService = userService;
+    private readonly ILoggerService _logger;
+    public UsersController(IUserService userService, ILoggerService logger)
+    {
+        _userService = userService;
+        _logger = logger;
+    }
 
     [HttpGet]
     public ViewResult List()
     {
+        _logger.LogInformation(LogLevel.Information, LoggingEvents.GetUsers, "Getting all Users");
+
         var items = _userService.GetAll().Select(p => new UserListItemViewModel
         {
             Id = p.Id,
@@ -55,6 +65,7 @@ public class UsersController : Controller
     [HttpGet]
     public PartialViewResult ViewUserPartial(long userId)
     {
+        _logger.LogInformation(LogLevel.Information, LoggingEvents.GetUserById, $"Getting User by id: {userId}");
         var user = _userService.GetUserById(userId);
 
         var model = new UserListItemViewModel
@@ -79,6 +90,7 @@ public class UsersController : Controller
     [HttpGet]
     public PartialViewResult UserEditFormPartial(long userId)
     {
+        _logger.LogInformation(LogLevel.Information, LoggingEvents.GetUserById, $"Getting User by id: {userId}");
         var user = _userService.GetUserById(userId);
 
         var model = new UserViewModel
@@ -113,6 +125,7 @@ public class UsersController : Controller
             DateOfBirth = user.DateOfBirth
         };
 
+        _logger.LogInformation(LogLevel.Information, LoggingEvents.CreateUser, $"Creating new user. Name: {userToBeCreated.Forename} {userToBeCreated.Surname}");
         _userService.AddUser(userToBeCreated);
 
         return Ok(new { message = "User created successfully" });
@@ -123,13 +136,14 @@ public class UsersController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest( new { message = "User could not be found!" });
+            return BadRequest(ModelState);
         }
 
         var userToBeUpdated = _userService.GetUserById(user.Id);
 
         if (user.Id <= 0 || userToBeUpdated.Id == 0)
         {
+            _logger.LogError(LogLevel.Error, LoggingEvents.UpdateUser, null, $"Could not find User: {userToBeUpdated.Id}");
             return BadRequest(new { message = "User could not be found!" });
         }
 
@@ -139,6 +153,7 @@ public class UsersController : Controller
         userToBeUpdated.IsActive = user.IsActive;
         userToBeUpdated.DateOfBirth = user.DateOfBirth;
 
+        _logger.LogInformation(LogLevel.Information, LoggingEvents.UpdateUser, $"Editting User id: {userToBeUpdated.Id}");
         _userService.EditUser(userToBeUpdated);
 
         return Ok(new { message = "User updated successfully" });
@@ -152,9 +167,11 @@ public class UsersController : Controller
 
         if (userToBeDeleted.Id == 0)
         {
+            _logger.LogError(LogLevel.Error, LoggingEvents.DeleteUser, null, $"Could not find User id: {userToBeDeleted.Id}");
             return BadRequest(new { message = "User could not be found!" });
         }
 
+        _logger.LogInformation(LogLevel.Information, LoggingEvents.DeleteUser, $"Deleting User id: {userToBeDeleted.Id}");
         _userService.DeleteUser(userToBeDeleted);
 
         return Ok(new { message = "User deleted successfully" });
